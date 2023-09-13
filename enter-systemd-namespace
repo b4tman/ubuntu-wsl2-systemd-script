@@ -1,5 +1,7 @@
 #!/bin/bash --norc
 
+set -x
+
 if [ "$LOGNAME" != "root" ]; then
     echo "You need to run $0 through sudo"
     exit 1
@@ -44,7 +46,7 @@ if [ -n "$SYSTEMD_PID" ] && [ "$SYSTEMD_PID" != "1" ]; then
     else
         exec /usr/bin/nsenter -t "$SYSTEMD_PID" -a \
             /bin/login -p -f "$SUDO_USER" \
-            $([ -f "$USER_HOME/.systemd-env" ] && /bin/cat "$USER_HOME/.systemd-env" | xargs printf ' %q')
+            $([ -f "$USER_HOME/.systemd-env" ] && /bin/cat "$USER_HOME/.systemd-env" | sed -e "s/\"\"/\"/g" -e "s/^'//g" -e "s/'\$//g" -e "s/^PERL_MB_OPT.*//g" -e "s/^FZF_.*//g" | xargs -d '\n' printf ' %s' | tee /home/b4tman/test.log )
     fi
     echo "Existential crisis"
     exit 1
